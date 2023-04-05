@@ -4,7 +4,7 @@
 
 ### How it works:
 
-Download the most recent release and preferably start it with command prompt:
+Download the most recent release and runt it, preferably start it with command prompt:
 
   ~~~ 
   java -jar PhysicsFX.jar --x=1280 --y=960 --n=25000 --T=6 
