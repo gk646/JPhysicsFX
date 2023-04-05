@@ -1,6 +1,6 @@
 package physx.objects;
 
-import physx.ObjectHandler;
+import physx.ParticleBasedHandler;
 
 
 public class LightObject extends MassObject {
@@ -8,7 +8,7 @@ public class LightObject extends MassObject {
     public LightObject(float posX, float posY) {
         this.posX = posX;
         this.posY = posY;
-        mass = ObjectHandler.random.nextFloat(100_000_00);
+        mass = ParticleBasedHandler.random.nextFloat(100_000_00);
         size = (int) (mass / 100_000);
     }
 
