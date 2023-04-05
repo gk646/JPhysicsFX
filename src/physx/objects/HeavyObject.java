@@ -1,7 +1,6 @@
 package physx.objects;
 
-import physx.ObjectHandler;
-import physx.util.Vector;
+import physx.ParticleBasedHandler;
 
 
 public class HeavyObject extends MassObject {
@@ -10,7 +9,7 @@ public class HeavyObject extends MassObject {
     public HeavyObject(float posX, float posY) {
         this.posX = posX;
         this.posY = posY;
-        mass = ObjectHandler.random.nextFloat(100_000_0000,100_000_00000L);
+        mass = ParticleBasedHandler.random.nextFloat(100_000_0000,100_000_00000L);
         size = (int) (mass / 100_00000);
     }
 

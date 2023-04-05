@@ -6,14 +6,22 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import physx.ObjectHandler;
+import physx.GridBasedHandler;
+import physx.ParticleBasedHandler;
+import physx.util.ObjectHandler;
 
 import java.util.Map;
 
 
+enum PhysicsStyle {
+    GRID_BASED, PARTICLE_BASED
+}
+
 public class Launcher extends Application {
     int screenSizeX = 1280, screenSizeY = 960, amountObjects = 5000, threads = 4;
     boolean debug;
+    PhysicsStyle style = PhysicsStyle.GRID_BASED;
+    ObjectHandler objectHandler;
 
     public static void main(String[] args) {
         launch(args);
@@ -40,9 +48,11 @@ public class Launcher extends Application {
         gc.setFill(Color.BLACK);
         gc.fillRect(0, 0, screenSizeX, screenSizeY);
         stage.show();
-        ObjectHandler objectHandler = new ObjectHandler(gc, amountObjects, screenSizeX, screenSizeY, threads, debug);
-
-
+        if (style == PhysicsStyle.PARTICLE_BASED) {
+            objectHandler = new ParticleBasedHandler(gc, amountObjects, screenSizeX, screenSizeY, threads, debug);
+        } else if (style == PhysicsStyle.GRID_BASED) {
+            objectHandler = new GridBasedHandler(gc, amountObjects, screenSizeX, screenSizeY, threads, debug);
+        }
         stage.setOnCloseRequest(e -> System.exit(1));
         scene.setOnScroll(event -> objectHandler.inputH.handleScroll(event));
         scene.setOnMouseDragged(event -> objectHandler.inputH.handleMouse(event));
@@ -67,6 +77,11 @@ public class Launcher extends Application {
         if (map.get("M") != null) {
             if (map.get("M").equals("debug")) {
                 debug = true;
+            }
+        }
+        if (map.get("style") != null) {
+            if (map.get("style").equals("particle")) {
+                style = PhysicsStyle.PARTICLE_BASED;
             }
         }
     }
