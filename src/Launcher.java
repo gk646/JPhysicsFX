@@ -7,13 +7,12 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import physx.ObjectHandler;
-import physx.util.InputHandler;
 
 import java.util.Map;
 
 
 public class Launcher extends Application {
-    int screenSizeX = 1280, screenSizeY = 960, amountObjects = 1000, threads = 4;
+    int screenSizeX = 1280, screenSizeY = 960, amountObjects = 5000, threads = 4;
     boolean debug;
 
     public static void main(String[] args) {
@@ -25,7 +24,7 @@ public class Launcher extends Application {
         System.out.println("""
                 Thanks for trying out PhysicsFX!
                 You can drag the screen using LeftMouseButton and zoom in/out using Scroll.
-               """);
+                """);
         Parameters parameters = getParameters();
         setupScreen(parameters);
         stage.setMaxWidth(screenSizeX);
@@ -65,10 +64,10 @@ public class Launcher extends Application {
         if (map.get("T") != null && Integer.parseInt(map.get("T")) > 0) {
             threads = Integer.parseInt(map.get("T"));
         }
-        if (map.get("M") != null ) {
-           if(map.get("M").equals("debug")){
-               debug = true;
-           }
+        if (map.get("M") != null) {
+            if (map.get("M").equals("debug")) {
+                debug = true;
+            }
         }
     }
 }
