@@ -21,8 +21,10 @@ Arguments:
 >> total amount of particles to spawn (0-infinity) recommended: 25000-50000
 
 > -M, *optional*
->> run mode (release (**default**), debug)
+>> run mode (release (**default**), debug)   
+> 
+  
 
+  
 
-
-JAR built with Java19, only basic runtime required.
+JAR built with Java19, only basic runtime required.  
