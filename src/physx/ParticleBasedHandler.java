@@ -2,9 +2,9 @@ package physx;
 
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import physx.objects.HeavyObject;
 import physx.objects.LightObject;
 import physx.objects.MassObject;
+import physx.objects.SuperHeavyObject;
 import physx.util.ObjectHandler;
 import physx.util.Vector;
 
@@ -12,6 +12,7 @@ import static physx.util.MathUtil.getGravityForceVector;
 
 public class ParticleBasedHandler extends ObjectHandler {
 
+    long[][] massValues = new long[SCREEN_X][SCREEN_Y];
 
     public ParticleBasedHandler(GraphicsContext gc, int countObjects, int sizeX, int sizeY, int threads, boolean debug) {
         this.gc = gc;
@@ -30,8 +31,9 @@ public class ParticleBasedHandler extends ObjectHandler {
     @Override
     protected void gravity(int start, int end) {
         Vector force;
-        for (int i = start; i < end - 1; i++) {
-            for (int j = start + 1; j < end; j++) {
+        int len = particles.length;
+        for (int i = start; i < end; i++) {
+            for (int j = 0; j < len; j++) {
                 if (i != j) {
                     force = getGravityForceVector(particles[i], particles[j]);
                     particles[i].vector.add(force);
@@ -40,8 +42,8 @@ public class ParticleBasedHandler extends ObjectHandler {
             }
             particles[i].move();
         }
-        particles[end - 1].move();
     }
+
 
     @Override
     protected void renderFrame() {
@@ -49,22 +51,26 @@ public class ParticleBasedHandler extends ObjectHandler {
         gc.fillRect(0, 0, SCREEN_X, SCREEN_Y);
         gc.setFill(Color.RED);
         for (MassObject obj : particles) {
-            gc.fillRect(HALF_X + (obj.posX + offsetX) / zoomLevel, HALF_Y + (obj.posY + offsetY) / zoomLevel, obj.size / zoomLevel, obj.size / zoomLevel);
+            //gc.setFill(valueToColor(obj.mass, 100_000_0, 100_000_00));
+            gc.fillRect(HALF_X + (obj.posX + offsetX - obj.size / 2) / zoomLevel, HALF_Y + (obj.posY + offsetY - obj.size / 2) / zoomLevel, obj.size / zoomLevel, obj.size / zoomLevel);
         }
+
+
         drawUi(gc);
     }
 
 
-
     protected void createParticles(int amount) {
+        int startX = 2000;
         particles = new MassObject[amount];
         for (int i = 0; i < amount; i++) {
             if (i % 500 == 0) {
-                particles[i] = new HeavyObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
-                continue;
+                //particles[i] = new HeavyObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
+                //continue;
             }
-            particles[i] = new LightObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
+            particles[i] = new LightObject(-startX + random.nextFloat(startX * 2), -startX + random.nextFloat(startX * 2));
         }
+        particles[0] = new SuperHeavyObject(500, 500, 100_000_00000L);
         for (int i = 0; i < gravityForces.length; i++) {
             gravityForces[i] = new Vector();
         }
@@ -74,8 +80,5 @@ public class ParticleBasedHandler extends ObjectHandler {
         super.drawUi();
         gc.fillText("ParticleBased: ", 25, 35);
     }
-
-
-
 }
 
