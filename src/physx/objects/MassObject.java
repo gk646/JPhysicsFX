@@ -5,11 +5,16 @@ import physx.util.Vector;
 abstract public class MassObject {
 
     public Vector vector = new Vector();
-    public float posX, posY, mass;
+    public float posX, posY;
+    public long mass;
     public int size;
 
 
     public void move() {
+
+    }
+
+    public void moveMax() {
 
     }
 

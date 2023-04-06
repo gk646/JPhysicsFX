@@ -6,7 +6,7 @@ public class MathUtil {
     public static final double G = 6.67430 * Math.pow(10, -11);
 
     public static double getSqDist(float x1, float x2, float y1, float y2) {
-        return Math.max(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2), 15);
+        return Math.max(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2), 5);
     }
 
     public static Vector getGravityForceVector(MassObject obj, MassObject obj2) {

@@ -4,7 +4,6 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 import physx.objects.MassObject;
 
@@ -12,12 +11,15 @@ import java.math.BigInteger;
 import java.security.SecureRandom;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 abstract public class ObjectHandler {
 
     protected GraphicsContext gc;
     public InputHandler inputH = new InputHandler(this);
-    protected MassObject[] particles;
+    public MassObject[] particles;
 
     protected Vector[] gravityForces;
 
@@ -48,7 +50,7 @@ abstract public class ObjectHandler {
 
     }
 
-    protected void startThreads() {
+    public void startThreads() {
         { //START RENDER THREAD
             Timeline timeline = new Timeline();
             timeline.setCycleCount(Timeline.INDEFINITE);
@@ -64,8 +66,9 @@ abstract public class ObjectHandler {
                 createStatisticThread(i, span, timing);
                 continue;
             }
-            createThread(i, span, timing, barrier);
+            //createThread(i, span, timing, barrier);
         }
+        createThreads(threads, span, timing);
     }
 
     protected void gravity(int start, int end) {
@@ -73,32 +76,24 @@ abstract public class ObjectHandler {
     }
 
     protected void createThread(int i, int span, float timing, CyclicBarrier barrier) {
-        Thread physicThread2 = new Thread(() -> {
+        Thread physicThread1 = new Thread(() -> {
             int start = i * span;
             int end = start + span;
-            long interval = (long) (1_000.0f / timing);
+            long lastTime1 = System.currentTimeMillis();
+            float logicCounter = 1_000.0f / timing;
+            float difference = 0;
+            long firstTimeGate1;
             while (true) {
-                long startTime = System.currentTimeMillis();
-                gravity(start, end);
-
-                try {
-                    barrier.await();
-                } catch (InterruptedException | BrokenBarrierException e) {
-                    e.printStackTrace();
-                }
-                long elapsedTime = System.currentTimeMillis() - startTime;
-                long sleepTime = interval - elapsedTime;
-
-                if (sleepTime > 0) {
-                    try {
-                        Thread.sleep(sleepTime);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
+                firstTimeGate1 = System.currentTimeMillis();
+                difference += (firstTimeGate1 - lastTime1) / logicCounter;
+                lastTime1 = firstTimeGate1;
+                if (difference > 1) {
+                    gravity(start, end);
+                    difference = 0;
                 }
             }
         });
-        physicThread2.start();
+        physicThread1.start();
     }
 
     protected void createStatisticThread(int i, int span, float timing) {
@@ -149,5 +144,56 @@ abstract public class ObjectHandler {
 
     protected void createParticles(int amount) {
 
+    }
+
+
+    private static float hueToRgb(float p, float q, float t) {
+        if (t < 0.0f) t += 1.0f;
+        if (t > 1.0f) t -= 1.0f;
+        if (t < 1.0f / 6.0f) return p + (q - p) * 6.0f * t;
+        if (t < 1.0f / 2.0f) return q;
+        if (t < 2.0f / 3.0f) return p + (q - p) * (2.0f / 3.0f - t) * 6.0f;
+        return p;
+    }
+
+    public static Color valueToColor(float value, float minValue, float maxValue) {
+        float normalizedValue = (value - minValue) / (maxValue - minValue);
+        float h = (1.0f - normalizedValue) * 240.0f / 360.0f; // Hue (0 to 240)
+        float s = 1.0f; // Saturation (1.0)
+        float l = 0.5f; // Lightness (0.5)
+
+        float q = l < 0.5f ? l * (1.0f + s) : l + s - l * s;
+        float p = 2 * l - q;
+
+        float r = hueToRgb(p, q, h + 1.0f / 3.0f);
+        float g = hueToRgb(p, q, h);
+        float b = hueToRgb(p, q, h - 1.0f / 3.0f);
+
+        return Color.color(r, g, b);
+    }
+
+    protected void createThreads(int numThreads, int span, float timing) {
+        ExecutorService executor = Executors.newFixedThreadPool(numThreads);
+        CyclicBarrier barrier = new CyclicBarrier(numThreads);
+
+        for (int i = 0; i < numThreads; i++) {
+            int start = i * span;
+            int end = start + span;
+
+            Runnable task = () -> {
+                while (true) {
+                    gravity(start, end);
+
+                    try {
+                        barrier.await();
+                        long interval = (long) (1_000.0f / timing);
+                        TimeUnit.MILLISECONDS.sleep(interval);
+                    } catch (InterruptedException | BrokenBarrierException e) {
+                        e.printStackTrace();
+                    }
+                }
+            };
+            executor.submit(task);
+        }
     }
 }

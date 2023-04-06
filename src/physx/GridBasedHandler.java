@@ -1,20 +1,22 @@
 package physx;
 
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.paint.Color;
-import physx.objects.HeavyObject;
+import javafx.scene.shape.Box;
 import physx.objects.LightObject;
 import physx.objects.MassObject;
 import physx.util.ObjectHandler;
+import physx.util.QuadTree;
 import physx.util.Vector;
 
-import static physx.util.MathUtil.getGravityForceVector;
 
 public class GridBasedHandler extends ObjectHandler {
+    public Box[] groupBox = new Box[count];
+    QuadTree quadTree;
+    int[][] containers = new int[SCREEN_X][SCREEN_Y];
 
-    public GridBasedHandler(GraphicsContext gc, int countObjects, int sizeX, int sizeY, int threads, boolean debug) {
-        this.gc = gc;
+    public GridBasedHandler(int countObjects, int sizeX, int sizeY, int threads, boolean debug) {
         this.debug = debug;
+        quadTree = new QuadTree(0, 0, SCREEN_X, SCREEN_Y, 100, 0);
         SCREEN_X = sizeX;
         SCREEN_Y = sizeY;
         HALF_X = sizeX / 2;
@@ -23,35 +25,37 @@ public class GridBasedHandler extends ObjectHandler {
         this.threads = threads;
         gravityForces = new Vector[countObjects];
         createParticles(countObjects);
-        startThreads();
     }
 
 
     @Override
     protected void gravity(int start, int end) {
-        Vector force;
-        for (int i = start; i < end - 1; i++) {
-            for (int j = start + 1; j < end; j++) {
-                if (i != j) {
-                    force = getGravityForceVector(particles[i], particles[j]);
-                    particles[i].vector.add(force);
-                    particles[j].vector.subtract(force);
-                }
+        for (int y = 0; y < SCREEN_Y; y++) {
+            for (int x = 0; x < SCREEN_X; x++) {
+
             }
-            particles[i].move();
         }
-        particles[end - 1].move();
+
+
     }
 
     @Override
     protected void renderFrame() {
-        gc.setFill(Color.BLACK);
-        gc.fillRect(0, 0, SCREEN_X, SCREEN_Y);
-        gc.setFill(Color.RED);
-        for (MassObject obj : particles) {
-            gc.fillRect(HALF_X + (obj.posX + offsetX) / zoomLevel, HALF_Y + (obj.posY + offsetY) / zoomLevel, obj.size / zoomLevel, obj.size / zoomLevel);
+        Box particle;
+        MassObject obj;
+        for (int y = 0; y < SCREEN_Y; y++) {
+            for (int x = 0; x < SCREEN_X; x++) {
+
+            }
         }
-        drawUi(gc);
+        int len = groupBox.length;
+
+        for (int i = 0; i < len; i++) {
+            particle = groupBox[i];
+            obj = particles[i];
+            particle.setTranslateX(obj.posX++);
+            particle.setTranslateY(obj.posY++);
+        }
     }
 
 
@@ -59,14 +63,12 @@ public class GridBasedHandler extends ObjectHandler {
     protected void createParticles(int amount) {
         particles = new MassObject[amount];
         for (int i = 0; i < amount; i++) {
-            if (i % 500 == 0) {
-                particles[i] = new HeavyObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
-                continue;
-            }
-            particles[i] = new LightObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
+            particles[i] = new LightObject(random.nextFloat(SCREEN_X), random.nextFloat(SCREEN_Y));
         }
-        for (int i = 0; i < gravityForces.length; i++) {
-            gravityForces[i] = new Vector();
+        for (int i = 0; i < SCREEN_X; i++) {
+            for (int j = 0; j < SCREEN_Y; j++) {
+
+            }
         }
     }
 
