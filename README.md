@@ -1,30 +1,26 @@
-## PhysicsFX
+### PhysicsFX
+#### A small physics/particle simulation built in JavaFX.
+How it works:
 
-#### A small physics/particle simulation build in JavaFX.
+Download the most recent release and run it, preferably start it with the command prompt:
 
-### How it works:
-
-Download the most recent release and run it, preferably start it with command prompt:
-
-  ~~~ 
-  java -jar PhysicsFX.jar --x=1280 --y=960 --n=25000 --T=6 
-  ~~~
-
+css
+~~~
+java -jar PhysicsFX.jar --x=1280 --y=960 --n=25000 --T=6
+~~~
 Arguments:
-> -x, **required**
->> window width in pixel  (0-infinity)
 
-> -y, **required**
->> window width in pixel. (0-infinity)
+    -x (required)
+        Window width in pixels (0-infinity)
 
-> -n, **required**
->> total amount of particles to spawn (0-infinity) recommended: 25000-50000
+    -y (required)
+        Window height in pixels (0-infinity)
 
-> -M, *optional*
->> run mode (release (**default**), debug)   
-> 
-  
+    -n (required)
+        Total amount of particles to spawn (0-infinity)
+        Recommended: 25,000-50,000
 
-  
+    -M (optional)
+        Run mode (release (default), debug)
 
-JAR built with Java19, only basic runtime required.  
+JAR built with Java 19, only basic runtime required.
