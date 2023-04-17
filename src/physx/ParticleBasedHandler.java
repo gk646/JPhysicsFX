@@ -4,7 +4,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import physx.objects.LightObject;
 import physx.objects.MassObject;
-import physx.objects.SuperHeavyObject;
 import physx.util.ObjectHandler;
 import physx.util.Vector;
 
@@ -22,7 +21,7 @@ public class ParticleBasedHandler extends ObjectHandler {
         HALF_X = sizeX / 2;
         HALF_Y = sizeY / 2;
         count = countObjects;
-        this.threads = threads;
+        this.threadCount = threads;
         gravityForces = new Vector[countObjects];
         createParticles(countObjects);
         startThreads();
@@ -51,26 +50,19 @@ public class ParticleBasedHandler extends ObjectHandler {
         gc.fillRect(0, 0, SCREEN_X, SCREEN_Y);
         gc.setFill(Color.RED);
         for (MassObject obj : particles) {
-            //gc.setFill(valueToColor(obj.mass, 100_000_0, 100_000_00));
             gc.fillRect(HALF_X + (obj.posX + offsetX - obj.size / 2) / zoomLevel, HALF_Y + (obj.posY + offsetY - obj.size / 2) / zoomLevel, obj.size / zoomLevel, obj.size / zoomLevel);
         }
-
-
         drawUi(gc);
     }
 
 
     protected void createParticles(int amount) {
-        int startX = 2000;
+        int startX = 10000;
         particles = new MassObject[amount];
         for (int i = 0; i < amount; i++) {
-            if (i % 500 == 0) {
-                //particles[i] = new HeavyObject(-25000 + random.nextFloat(50000), -25000 + random.nextFloat(50000));
-                //continue;
-            }
             particles[i] = new LightObject(-startX + random.nextFloat(startX * 2), -startX + random.nextFloat(startX * 2));
         }
-        particles[0] = new SuperHeavyObject(500, 500, 100_000_00000L);
+        //particles[0] = new SuperHeavyObject(500, 500, 100_000_00000L);
         for (int i = 0; i < gravityForces.length; i++) {
             gravityForces[i] = new Vector();
         }

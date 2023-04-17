@@ -5,6 +5,7 @@ import javafx.animation.Timeline;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
+import physx.objects.LightObject;
 import physx.objects.MassObject;
 
 import java.math.BigInteger;
@@ -20,14 +21,14 @@ abstract public class ObjectHandler {
     protected GraphicsContext gc;
     public InputHandler inputH = new InputHandler(this);
     public MassObject[] particles;
-
+    public LightObject[] particles_light;
     protected Vector[] gravityForces;
 
     protected BigInteger perfTest = BigInteger.ZERO;
     public static final SecureRandom random = new SecureRandom();
     protected int perfCounter;
     protected int count;
-    protected int threads;
+    protected int threadCount;
     public int offsetX;
     public int offsetY;
     public int zoomLevel = 15;
@@ -39,16 +40,18 @@ abstract public class ObjectHandler {
         gc.setFill(Color.WHITE);
         int y = 75;
         int dist = 22;
-        gc.fillText("Threads: " + threads, 25, y);
+        gc.fillText("Threads: " + threadCount, 25, y);
         gc.fillText("Particles: " + count, 25, y + dist);
         gc.fillText("PositionX: " + offsetX, 25, y + dist * 2);
         gc.fillText("PositionY: " + offsetY, 25, y + dist * 3);
         gc.fillText("Zoom: " + zoomLevel, 25, y + dist * 4);
     }
 
-    protected void renderFrame() {
+    abstract protected void renderFrame();
 
-    }
+    abstract protected void createParticles(int amount);
+
+    abstract protected void gravity(int start, int end);
 
     public void startThreads() {
         { //START RENDER THREAD
@@ -58,48 +61,16 @@ abstract public class ObjectHandler {
             timeline.getKeyFrames().add(kf);
             timeline.play();
         }
-        int span = count / threads;
+        int span = count / threadCount;
         float timing = 60;
-        CyclicBarrier barrier = new CyclicBarrier(threads);
-        for (int i = 0; i < threads; i++) {
-            if (i == 0 && debug) {
-                createStatisticThread(i, span, timing);
-                continue;
-            }
-            //createThread(i, span, timing, barrier);
+        if (debug) {
+            createStatisticThread(timing);
         }
-        createThreads(threads, span, timing);
+        createThreads(threadCount, span, timing);
     }
 
-    protected void gravity(int start, int end) {
-
-    }
-
-    protected void createThread(int i, int span, float timing, CyclicBarrier barrier) {
+    protected void createStatisticThread(float timing) {
         Thread physicThread1 = new Thread(() -> {
-            int start = i * span;
-            int end = start + span;
-            long lastTime1 = System.currentTimeMillis();
-            float logicCounter = 1_000.0f / timing;
-            float difference = 0;
-            long firstTimeGate1;
-            while (true) {
-                firstTimeGate1 = System.currentTimeMillis();
-                difference += (firstTimeGate1 - lastTime1) / logicCounter;
-                lastTime1 = firstTimeGate1;
-                if (difference > 1) {
-                    gravity(start, end);
-                    difference = 0;
-                }
-            }
-        });
-        physicThread1.start();
-    }
-
-    protected void createStatisticThread(int i, int span, float timing) {
-        Thread physicThread1 = new Thread(() -> {
-            int start = i * span;
-            int end = start + span;
             long lastTime1 = System.currentTimeMillis();
             float logicCounter = 1_000.0f / timing;
             float difference = 0;
@@ -110,7 +81,7 @@ abstract public class ObjectHandler {
                 lastTime1 = firstTimeGate1;
                 if (difference >= 1) {
                     long time = System.nanoTime();
-                    gravity(start, end);
+                    gravity(0, count);
                     long diff = System.nanoTime() - time;
                     perfTest = perfTest.add(BigInteger.valueOf(diff));
                     perfCounter++;
@@ -142,10 +113,6 @@ abstract public class ObjectHandler {
         return formatted.reverse().toString();
     }
 
-    protected void createParticles(int amount) {
-
-    }
-
 
     private static float hueToRgb(float p, float q, float t) {
         if (t < 0.0f) t += 1.0f;
@@ -175,15 +142,12 @@ abstract public class ObjectHandler {
     protected void createThreads(int numThreads, int span, float timing) {
         ExecutorService executor = Executors.newFixedThreadPool(numThreads);
         CyclicBarrier barrier = new CyclicBarrier(numThreads);
-
         for (int i = 0; i < numThreads; i++) {
             int start = i * span;
             int end = start + span;
-
             Runnable task = () -> {
                 while (true) {
                     gravity(start, end);
-
                     try {
                         barrier.await();
                         long interval = (long) (1_000.0f / timing);

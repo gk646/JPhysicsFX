@@ -39,60 +39,33 @@ public class Launcher extends Application {
     @Override
     public void start(Stage stage) throws Exception {
         stage.setTitle("PhysicsFX Demo");
-        System.out.println("""
-                Thanks for trying out PhysicsFX!
-                You can drag the screen using LeftMouseButton and zoom in/out using Scroll.
-                """);
         Parameters parameters = getParameters();
         setupScreen(parameters);
         stage.setMaxWidth(screenSizeX);
         stage.setMaxHeight(screenSizeY);
+        Canvas canvas = new Canvas(screenSizeX, screenSizeY);
+        GraphicsContext gc = canvas.getGraphicsContext2D();
+        Group root = new Group();
+        Scene scene = new Scene(root);
+        scene.setCursor(Cursor.HAND);
+        root.getChildren().add(canvas);
+        stage.setScene(scene);
         if (style == PhysicsStyle.PARTICLE_BASED) {
-            Canvas canvas = new Canvas(screenSizeX, screenSizeY);
-            GraphicsContext gc = canvas.getGraphicsContext2D();
-            Group root = new Group();
-            Scene scene = new Scene(root);
-            scene.setCursor(Cursor.HAND);
-            root.getChildren().add(canvas);
-            stage.setScene(scene);
-            gc.setFill(Color.BLACK);
-            gc.fillRect(0, 0, screenSizeX, screenSizeY);
+            System.out.println("""
+                Thanks for trying out PhysicsFX!
+                You can drag the screen using LeftMouseButton and zoom in/out using Scroll.
+                """);
             objectHandler = new ParticleBasedHandler(gc, amountObjects, screenSizeX, screenSizeY, threads, debug);
-            stage.show();
             stage.setOnCloseRequest(e -> System.exit(1));
             scene.setOnScroll(event -> objectHandler.inputH.handleScroll(event));
             scene.setOnMouseDragged(event -> objectHandler.inputH.handleMouse(event));
             scene.setOnMouseMoved(event -> objectHandler.inputH.handleMouse(event));
         } else if (style == PhysicsStyle.GRID_BASED) {
-            objectHandler = new GridBasedHandler(amountObjects, screenSizeX, screenSizeY, threads, debug);
-            Group particlesGroup = new Group();
-            ((GridBasedHandler) objectHandler).groupBox = new Box[amountObjects];
-            for (int i = 0; i < amountObjects; i++) {
-                MassObject obj = objectHandler.particles[i];
-                Box particle = new Box(1, 1, 0.001); // Very small z-dimension
-                particle.setTranslateX(obj.posX);
-                particle.setTranslateY(obj.posY);
-                particle.setTranslateZ(0);
-                particle.setMaterial(new PhongMaterial(Color.RED));
-                ((GridBasedHandler) objectHandler).groupBox[i] = particle;
-
-                particlesGroup.getChildren().add(particle);
-            }
-
-            SubScene subScene = new SubScene(particlesGroup, SCREEN_X, SCREEN_Y, false, null);
-            ParallelCamera parallelCamera = new ParallelCamera();
-
-            parallelCamera.setTranslateZ(-1);
-
-            subScene.setCamera(parallelCamera);
-
-            Group root = new Group(subScene);
-            Scene scene = new Scene(root, SCREEN_X, SCREEN_Y);
-            stage.setScene(scene);
-            stage.show();
-
+            objectHandler = new GridBasedHandler(amountObjects, screenSizeX, screenSizeY, threads, debug,gc);
             objectHandler.startThreads();
+            stage.setOnCloseRequest(e -> System.exit(1));
         }
+        stage.show();
     }
 
 

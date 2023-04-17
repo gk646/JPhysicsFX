@@ -14,6 +14,9 @@ abstract public class MassObject {
 
     }
 
+    public void move(Vector vector) {
+
+    }
     public void moveMax() {
 
     }

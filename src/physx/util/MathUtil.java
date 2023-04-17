@@ -17,6 +17,14 @@ public class MathUtil {
         return new Vector((float) ((obj2.posX - obj.posX) / sqrtDist * F), (float) ((obj2.posY - obj.posY) / sqrtDist * F));
     }
 
+    public static Vector getGravityForceVectorForPixel(int x, int y, int goalx, int goaly, int mass, int goalmass) {
+        double F;
+        int dx = goalx - x, dy = goaly - y;
+        double dist = (dx * dx) + (dy * dy);
+        double sqrtDist = Math.sqrt(dist);
+        F = G * (mass * goalmass) / dist;
+        return new Vector((float) ((dx) / sqrtDist * F), (float) ((dy) / sqrtDist * F));
+    }
 
     private float sqrt(float x) {
         double xhalf = 0.5f * x;
@@ -29,5 +37,24 @@ public class MathUtil {
 
     private Vector multiplyVector(Vector vec, Vector vec2) {
         return new Vector(vec.x * vec2.x, vec.y * vec2.y);
+    }
+
+    public static int heatMapColor(int value, int minValue, int maxValue) {
+        float normalizedValue = (float) (value - minValue) / (maxValue - minValue);
+
+        int r, g, b;
+
+        if (normalizedValue < 0.5f) {
+            r = 0;
+            g = (int) (normalizedValue * 2.0f * 255);
+            b = 255 - g;
+        } else {
+            r = (int) ((normalizedValue - 0.5f) * 2.0f * 255);
+            g = 255 - r;
+            b = 0;
+        }
+
+        int a = 255; // Alpha channel (fully opaque)
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 }
