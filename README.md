@@ -1,4 +1,4 @@
-### PhysicsFX
+### JPhysicsFX
 #### A small physics/particle simulation built in JavaFX.
 
 
